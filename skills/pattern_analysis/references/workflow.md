@@ -6,12 +6,14 @@ This file expands the skill into a repeatable workflow that can be followed manu
 
 Collect:
 
-- target case ID or run directory
+- target case ID or analysis roots
 - whether the user wants a single-case report, cohort audit, comparison, or ablation plan
 - whether stronger comparison runs exist
 - whether the final deliverable should be markdown, LaTeX/PDF, or both
 
 ## 2. Artifact discovery
+
+First scan the full directory trees that may contain relevant evidence. Do not assume a single `run_dir/summary/` layout.
 
 Preferred artifact set:
 
@@ -30,6 +32,15 @@ Preferred artifact set:
   - comparison runs for the same task
 
 Common filenames include `task.json`, `execution_summary.json`, `tool_calls.md`, `reconstructed_code.md`, `judge_context.md`, `final_response.md`, and `grade_report.json`, but the method is not tied to those exact names.
+
+Recommended helper flow:
+
+1. Run `scripts/discover_case_artifacts.py` across every relevant analysis root.
+2. Review the discovered candidate directories and choose the primary case scope plus any comparison scopes.
+3. If one logical case spans multiple roots, keep all matching directories and pass them as repeated `--case-dir` arguments.
+4. Run `scripts/collect_case_inputs.py` against the discovery catalog to build the case manifest.
+5. Pass `--cleanup-catalog` unless the user explicitly wants to keep the intermediate catalog.
+6. Use any convenient output paths for the catalog, manifest, and report. They are user workspace artifacts, not part of the skill package itself.
 
 ## 3. Task contract reduction
 

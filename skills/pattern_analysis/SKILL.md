@@ -62,28 +62,47 @@ This order matters:
 
 ## Tool-oriented workflow
 
-When the user has structured artifacts on disk, start with the helper scripts:
+When the user has artifacts on disk, start by scanning the full analysis folder set rather than assuming a fixed run layout.
 
-### Case manifest
+### 1. Discover candidate artifacts and directories
+
+Use this first when the input may contain arbitrary filenames, arbitrary nesting, or multiple potential cases:
+
+```bash
+CATALOG_PATH="./pattern-analysis.catalog.json"
+
+python skills/pattern_analysis/scripts/discover_case_artifacts.py \
+  --input-dir <ANALYSIS_ROOT_1> \
+  --input-dir <ANALYSIS_ROOT_2> \
+  --output "$CATALOG_PATH"
+```
+
+Read the catalog and identify the directory that best corresponds to the case you want to analyze. The catalog is a temporary intermediate file. Do not keep it around after the manifest has been generated unless the user explicitly wants it.
+
+### 2. Build the case manifest from the discovered catalog
 
 ```bash
 python skills/pattern_analysis/scripts/collect_case_inputs.py \
-  --case-id <CASE_ID> \
-  --task-spec <TASK_SPEC_PATH> \
-  --run-dir <RUN_DIR> \
-  --compare-run-dir <RUN_DIR_2> \
-  --output <MANIFEST_JSON>
+  --catalog "$CATALOG_PATH" \
+  --case-dir <PRIMARY_CASE_DIR_FROM_CATALOG> \
+  --case-dir <OPTIONAL_SECOND_PRIMARY_DIR_FOR_SAME_CASE> \
+  --compare-case-dir <OPTIONAL_COMPARISON_DIR_FROM_CATALOG> \
+  --output ./pattern-analysis.manifest.json \
+  --cleanup-catalog
 ```
 
-### Report scaffold
+If the best primary directory is obvious from the catalog ranking, `--case-dir` is optional. The helper will pick the top-ranked candidate.
+Repeat `--case-dir` when the task spec, run outputs, grader artifacts, or comparison evidence for the same case live under separate roots.
+
+### 3. Scaffold the report
 
 ```bash
 python skills/pattern_analysis/scripts/scaffold_case_report.py \
-  --manifest <MANIFEST_JSON> \
-  --output <OUTLINE_MD>
+  --manifest ./pattern-analysis.manifest.json \
+  --output ./pattern-analysis.report.md
 ```
 
-These scripts do not replace reasoning. They compress repetitive file discovery and make later analysis more deterministic.
+These scripts do not replace reasoning. They separate directory discovery from case assembly so the skill can work over arbitrary analysis trees instead of a single hard-coded summary layout.
 
 ## Full-cycle workflow
 
