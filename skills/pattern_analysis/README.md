@@ -1,6 +1,6 @@
 # Pattern Analysis Skill
 
-This folder contains a reusable, tool-oriented skill package for evidence-backed pattern analysis of complex task runs.
+This folder contains a reusable, tool-oriented skill package for evidence-backed pattern analysis of complex benchmark task runs.
 
 It is designed for:
 
